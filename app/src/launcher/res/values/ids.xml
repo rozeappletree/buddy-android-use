@@ -1,0 +1,5 @@
+<resources>
+    <!-- HomeActivity's root view: how Buddy's accessibility service tells the home screen from Buddy's own screens
+         (see Home.java in src/main) -->
+    <item name="buddy_home" type="id" />
+</resources>

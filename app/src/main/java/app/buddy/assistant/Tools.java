@@ -991,7 +991,7 @@ final class Tools {
                         .append(title != null ? " \"" + title + "\"" : "")
                         .append(w.isActive() ? " (active)" : "").append('\n');
                 if (w.getType() == AccessibilityWindowInfo.TYPE_APPLICATION && root.getPackageName() != null
-                        && !svc.getPackageName().contentEquals(root.getPackageName())
+                        && !Home.ownUi(svc, root) // local: Buddy's home screen counts as an app (Home)
                         && (app == null || w.isActive())) app = root.getPackageName().toString();
                 covers = coversAbove(windows, w);
                 walk(root, sb, 0);
@@ -1181,7 +1181,7 @@ final class Tools {
         for (AccessibilityWindowInfo w : windows()) {
             if (w.getType() != AccessibilityWindowInfo.TYPE_APPLICATION && w.getType() != AccessibilityWindowInfo.TYPE_SYSTEM) continue;
             AccessibilityNodeInfo root = w.getRoot();
-            if (root == null || svc.getPackageName().contentEquals(String.valueOf(root.getPackageName()))) continue;
+            if (root == null || Home.ownUi(svc, root)) continue; // local: Home
             texts(root, out);
         }
         return out;
@@ -1204,7 +1204,7 @@ final class Tools {
         for (AccessibilityWindowInfo w : windows()) {
             if (w.getType() != AccessibilityWindowInfo.TYPE_APPLICATION && w.getType() != AccessibilityWindowInfo.TYPE_SYSTEM) continue;
             AccessibilityNodeInfo root = w.getRoot();
-            if (root == null || svc.getPackageName().contentEquals(String.valueOf(root.getPackageName()))) continue;
+            if (root == null || Home.ownUi(svc, root)) continue; // local: Home
             findIn(root, want, best);
             if (best[0] != null) return best[0];
         }

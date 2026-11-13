@@ -233,7 +233,7 @@ public class BuddyService extends AccessibilityService implements McpServer.Hand
         android.view.accessibility.AccessibilityNodeInfo root = app == null ? null : app.getRoot();
         CharSequence pkg = root == null ? null : root.getPackageName();
         // Buddy's own windows don't count (the text cursor's handle over the bubble is one)
-        if (pkg == null || pkg.toString().equals(getPackageName())) return;
+        if (pkg == null || Home.ownUi(this, root)) return; // local: Buddy's home screen counts as an app (Home)
         String front = pkg.toString();
         // Recents may belong to another launcher than Home (e.g. the phone's own while Nova handles Home)
         if (!front.equals(frontApp) && isLauncher(front)) bubble.onLauncherShown();
@@ -660,7 +660,7 @@ public class BuddyService extends AccessibilityService implements McpServer.Hand
             cardTouches++;
             return;
         }
-        if (getPackageName().equals(foregroundPkg()) || onlyRuleRuns()) return;
+        if ((getPackageName().equals(foregroundPkg()) && !Home.inFront(this)) || onlyRuleRuns()) return; // local: Home
         autoPause(R.string.service_autopaused_touch);
     }
 

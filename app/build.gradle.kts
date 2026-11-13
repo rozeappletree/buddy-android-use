@@ -60,6 +60,12 @@ android {
             vcsInfo.include = false
             if (keystorePath != null) signingConfig = signingConfigs.getByName("release")
         }
+        // Buddy as a home screen (Android Settings > Default apps > Home app). Everything for it lives in
+        // src/launcher, so this block is the only upstream file touched. Build: ./gradlew assembleFdroidLauncher
+        create("launcher") {
+            initWith(getByName("release"))
+            signingConfig = if (keystorePath != null) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
+        }
     }
 
     compileOptions {
@@ -70,4 +76,32 @@ android {
     buildFeatures {
         buildConfig = false
     }
+}
+
+// Local addition (not upstream). Windows without Developer Mode checks git symlinks out as small text files holding
+// the target path: app/src/main/assets/linux is then a 17-byte file instead of the scripts, and Buddy's Linux set-up
+// fails ("install failed: linux/buddy-run"). Build from a copy of the assets with the links followed. Where links
+// work (Linux, macOS, CI, Windows with Developer Mode) nothing is broken and nothing changes.
+fun brokenLinkTarget(f: File): File? {
+    if (!f.isFile || f.length() > 512) return null
+    val t = f.readText()
+    if (t.contains('\n') || !t.startsWith("../")) return null
+    return f.parentFile.resolve(t).normalize().takeIf { it.exists() }
+}
+fun copyFollowingLinks(src: File, dst: File) {
+    val real = brokenLinkTarget(src) ?: src
+    if (real.isDirectory) {
+        dst.mkdirs()
+        real.listFiles()!!.forEach { copyFollowingLinks(it, File(dst, it.name)) }
+    } else {
+        real.copyTo(dst, overwrite = true)
+    }
+}
+val mainAssets = file("src/main/assets")
+if (mainAssets.listFiles().orEmpty().any { brokenLinkTarget(it) != null }) {
+    // copied while Gradle configures the build (well under 1 MB), so every task that reads assets sees it
+    val resolvedAssets = layout.buildDirectory.dir("resolved-assets").get().asFile
+    resolvedAssets.deleteRecursively()
+    copyFollowingLinks(mainAssets, resolvedAssets)
+    android.sourceSets.getByName("main").assets.setSrcDirs(listOf(resolvedAssets))
 }

@@ -474,7 +474,8 @@ final class Guard {
     /** Is this Buddy's own UI (its screens, the bubble, its approval card)? */
     static boolean isBuddy(AccessibilityNodeInfo n) {
         return n != null && n.getPackageName() != null
-                && BuildInfo.class.getPackage().getName().contentEquals(n.getPackageName());
+                && BuildInfo.class.getPackage().getName().contentEquals(n.getPackageName())
+                && !Home.contains(BuddyService.get(), n); // local: the home screen is an ordinary app (Home)
     }
 
     /**

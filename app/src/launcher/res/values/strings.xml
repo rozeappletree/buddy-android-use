@@ -1,0 +1,5 @@
+<resources>
+    <string name="home_app_name">Buddy Home</string>
+    <string name="home_search_hint">Search apps</string>
+    <string name="home_open_buddy">Buddy</string>
+</resources>
